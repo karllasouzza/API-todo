@@ -1,6 +1,8 @@
 /* Apos instalarmos o "express" o importamos para podermos começar
  a usa-lo neste arquivo */
 import express from "express";
+// /
+import bd from "./infra/sqlite-db.js";
 
 /* Criamos uma contante chamada app que irá conter a execução do express 
 ou seja irá conter toda a instancia (fluxo) de nossa api */
@@ -17,7 +19,7 @@ import { Tarefas } from "./controllers/Tarefas.js";
 import { Usuarios } from "./controllers/Usuarios.js";
 
 // Executamos nossas rotas passando o "app" nossa instancia
-Tarefas(app);
+Tarefas(app, bd);
 Usuarios(app);
 
 /* Neste caso estamos pedindo para a api ficar escutando uma porta
