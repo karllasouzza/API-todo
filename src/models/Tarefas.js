@@ -1,12 +1,20 @@
-//  this = Sempre irá se referir a class que ele esta dentro
-import { v4 as uuidv4 } from 'uuid';
+import moment from "moment";
+import { v4 as uuidv4 } from "uuid";
 
 class Tarefas {
-  constructor(idUsuario, texto, status) {
-    this.id = uuidv4();
-    this.userId = idUsuario;
-    this.text = texto;
-    this.status = status;
+  static validStatus(status) {
+    return ["Pending", "Complete", "Not Complete"].includes(status)
+      ? status
+      : "Status inexistente";
+  }
+
+  constructor(titulo, desc, status, userId, id) {
+    this.id = id || uuidv4();
+    this.userId = userId;
+    this.title = titulo;
+    this.description = desc;
+    this.dataCreate = moment().format();
+    this.status = Tarefas.validStatus(status);
   }
 }
 

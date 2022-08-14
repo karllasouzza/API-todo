@@ -1,60 +1,66 @@
-/* Estamos importando nosso banco simulado e nosso model para
- podermos usa-los neste arquivo */
 import TarefasM from "../models/Tarefas.js";
-// import { bdTarefas } from "../infra/bd.js";
+import {
+  delTaskByID,
+  getTaskByID,
+  getTasks,
+  postTask,
+  putTaskByID,
+} from "../dao/Tarefas.js";
 
-//  Estamos exportando uma const
 export const Tarefas = (app, bd) => {
-  app.get("/tarefas", (req, res) => {
-    bd.all("SELECT * FROM TAREFAS", (erro, rows) => {
-      if (erro) {
-        console.log(erro.message);
-      } else {
-        res.json(rows);
-      }
-    });
+  app.get("/tarefas", async (req, res) => {
+    try {
+      const data = await getTasks();
+      res.status(200).json({ results: data, error: false });
+    } catch (erro) {
+      res.status(400).json({ message: erro.message, error: true });
+    }
   });
 
-  app.post("/tarefas", (req, res) => {
-    const { titulo, desc, status, datacreate, id_usuario } = req.body;
+  app.post("/tarefas", async (req, res) => {
+    const { titulo, desc, status, id_usuario } = req.body;
 
-    bd.run(
-      `INSERT INTO TAREFAS(TITULO, DESCRICAO, STATUS, DATACRIACAO, ID_USUARIO)
-            VALUES (?,?,?,?,?)`,
-      [titulo, desc, status, datacreate, id_usuario],
-      (erro) => {
-        if (erro) {
-          console.log(erro);
-        } else {
-          res.send("tarefa criada com sucesso");
-        }
-      }
-    );
+    const dataMolded = new TarefasM(titulo, desc, status, id_usuario);
+    console.log(dataMolded);
+    try {
+      const data = await postTask(dataMolded);
+      res.status(201).json({ results: data, error: false });
+    } catch (erro) {
+      res.status(400).json({ message: erro, error: true });
+    }
   });
 
-  // app.post("/tarefas", (req, res) => {
-  //   const { idUsuario, texto, status } = req.body;
+  app.put("/tarefas/:id", async (req, res) => {
+    const { titulo, desc, status, dataCreate, userId } = req.body;
+    const { id } = req.params;
 
-  //   const dataM = new TarefasM(idUsuario, texto, status);
-  //   bdTarefas.push(dataM);
-  //   res.send(bdTarefas);
-  // });
+    
+    try {
+      const oldTask = await getTaskByID(id);
 
-  // app.get("/tarefas/:id", (req, res) => {
-  //   const data = bdTarefas.filter((element) => element.id === req.params.id);
+      console.log(oldTask)
+  
+      const dataMolded = new TarefasM(
+        titulo || oldTask[0].TITULO,
+        desc || oldTask[0].DESCRICAO,
+        status || oldTask[0].STATUS,
+        dataCreate || oldTask[0].DATACRIACAO,
+        userId || oldTask[0].ID_USUARIO,
+        id
+      );
+      const data = await putTaskByID(dataMolded);
+      res.status(201).json({ results: data, error: false });
+    } catch (erro) {
+      res.status(400).json({ message: erro, error: true });
+    }
+  });
 
-  //   res.send(data);
-  // });
-
-  // app.delete("/tarefas/:id", (req, res) => {
-  //   res.send(req.params.id);
-  // });
-
-  // app.put("/tarefas/:id", (req, res) => {
-  //   res.send(req.params.id);
-  // });
-
-  // app.patch("/tarefas/:id", (req, res) => {
-  //   res.send(req.params.id);
-  // });
+  app.delete("/tarefas/:id", async (req, res) => {
+    try {
+      const data = await delTaskByID(req.params.id);
+      res.status(200).json({ results: data, error: false });
+    } catch (erro) {
+      res.status(400).json({ message: erro.message, error: true });
+    }
+  });
 };
